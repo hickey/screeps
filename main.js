@@ -19,24 +19,24 @@ module.exports.loop = function () {
     
     if(harvesters.length < 2) {
         var newName = 'Harvester' + Game.time;
-        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], newName, 
+        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,CARRY,MOVE,MOVE], newName, 
             {memory: {role: 'harvester'}}); 
         //console.log("Harvester spawn result: ", res);
         if (res == 0) {
             console.log("Spawning new harvester: " + newName);
         }
-    } else if(upgraders.length < 6) {
+    } else if(upgraders.length < 2) {
         var newName = 'Upgrader' + Game.time;
-        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], newName, 
+        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,CARRY,MOVE,MOVE], newName, 
             {memory: {role: 'upgrader'}});        
         //console.log("Upgrader spawn result: ", res);
         if (res == 0) {
             console.log('Spawning new upgrader: ' + newName);
         }
 
-    } else if(builders.length < 1) {
+    } else if(builders.length < 4) {
         var newName = 'Builder' + Game.time;
-        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], newName, 
+        var res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,CARRY,MOVE,MOVE], newName, 
             {memory: {role: 'builder'}});
         //console.log("Builder spawn result: ", res);
         if (res == 0) {
