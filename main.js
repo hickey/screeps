@@ -19,20 +19,20 @@ module.exports.loop = function () {
     
     if(harvesters.length < 2) {
        let res = roleHarvester.create(Game.spawns['Spawn1'].room);
-        if (res == 0) {
-            console.log("Spawning new harvester: " + newName);
-        }
+        //if (res == 0) {
+        //    console.log("Spawning new harvester: " + newName);
+        //}
     } else if(upgraders.length < 2) {
-       let res = roleUpgrader.create(Game.spawns['Spawn1'].room);
-        if (res == 0) {
-            console.log('Spawning new upgrader: ' + newName);
-        }
+        let res = roleUpgrader.create(Game.spawns['Spawn1'].room);
+        //if (res == 0) {
+        //    console.log('Spawning new upgrader: ' + newName);
+        //}
 
     } else if(builders.length < 4) {
         let res = roleBuilder.create(Game.spawns['Spawn1'].room);
-        if (res == 0) {
-            console.log('Spawning new builder: ' + newName);
-        }
+        //if (res == 0) {
+        //    console.log('Spawning new builder: ' + newName);
+        //}
     }
     
     if(Game.spawns['Spawn1'].spawning) { 

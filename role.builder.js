@@ -62,8 +62,15 @@ var roleBuilder = {
                 switch(res) {
                     case OK:
                         var distance = creep.pos.getRangeTo(goal);
+                        let sector = creep.room.lookAt(goal);
+                        let allowedDistance = 1;
+                        sector.forEach(function(def) {
+                            if (def.type == LOOK_CONSTRUCTION_SITES) {
+                                allowedDistance = 3;
+                            }
+                        });
                         //console.log("distance = ", distance);
-                        if (distance <= 1) {
+                        if (distance <= allowedDistance) {
                             //console.log("reached goal, reassing to target");
                             // reached goal, move to next state
                             creep.memory.target = creep.memory.goal;

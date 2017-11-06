@@ -61,8 +61,17 @@ var roleUpgrader = {
                 // console.log("res = ", res);
                 switch(res) {
                     case OK:
-                        var distance = creep.pos.getRangeTo(goal);
-                        if (distance == 1) {
+                        let distance = creep.pos.getRangeTo(goal);
+                        let sector = creep.room.lookAt(goal);
+                        let allowedDistance = 1;
+                        sector.forEach(function(def) {
+                            if (def.type == LOOK_STRUCTURES) {
+                                if (def.structure == STRUCTURE_CONTROLLER) {
+                                    allowedDistance = 3;
+                                }
+                            }
+                        });
+                        if (distance <= allowedDistance) {
                             //console.log("reached goal, reassing to target");
                             // reached goal, move to next state
                             creep.memory.target = creep.memory.goal;
