@@ -34,11 +34,9 @@ var roleHarvester = {
         switch (creep.memory.task) {
             
             case T_unassigned:
-                var sources = creep.room.find(FIND_SOURCES_ACTIVE);
-                var instance = Math.round(Math.random() * sources.length);
-                if(creep.harvest(sources[instance]) == ERR_NOT_IN_RANGE) {
-                    creep.memory.goal = sources[instance].id;
-                    creep.memory.task = T_move;
+                let source = locateEnergySource(creep);
+                if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                    nextTask(creep, T_move, {setGoal: source.id});
                 }
                 break;
                 
@@ -79,8 +77,7 @@ var roleHarvester = {
                         return;
                         break;
                     case ERR_INVALID_TARGET:
-                        creep.memory.goal = null;
-                        creep.memory.task = T_unassigned;
+                        nextTask(creep, T_unassigned, {setGoal: null});
                         creep.say("ARG!");
                         break;
                 }
@@ -91,15 +88,13 @@ var roleHarvester = {
                 if (creep.carry.energy < creep.carryCapacity) {
                     var res = creep.harvest(target);
                     if (res == ERR_NOT_ENOUGH_RESOURCES) {
-                        creep.memory.task = T_unassigned;
-                        creep.memory.target = null;
+                        nextTask(creep, T_unassigned, {setGoal: null});
                     }
                 } else {
                     // finished recharging
                     var target = locateDeliveryTarget(creep);
-                    if (target) {        
-                        creep.memory.goal = target.id;
-                        creep.memory.task = T_move;
+                    if (target) {
+                        nextTask(creep, T_move, {setGoal: target.id});
                     }
                 }
                 break;
@@ -111,16 +106,15 @@ var roleHarvester = {
                     console.log("transfering energy: ", res);
                     if (res == ERR_FULL) {
                         var target = locateDeliveryTarget(creep);
-                        if (target) {        
-                            creep.memory.goal = target.id;
-                            creep.memory.task = T_move;
+                        if (target) {
+                            nextTask(creep, T_move, {setGoal: target.id});
                         }
                     }
                 } else {
                     console.log("transfer complete");
                     // finished transfer of energy
-                    creep.memory.target = null;
-                    creep.memory.task = T_unassigned;
+                    nextTask(creep, T_unassigned, {setGoal: null});
+                    creep.say("🔄 harvest");
                 }
                 break;
                 
@@ -132,8 +126,48 @@ var roleHarvester = {
 	}
 };
 
+
+
+
+function nextTask(creep, newTask, options) {
+    creep.memory.task = newTask;
+    if (options.setGoal) {
+        creep.memory.target = creep.memory.goal;
+        creep.memory.goal = options.setGoal;
+    }
+    
+    if (options.setAcheivement) {
+        creep.memory.acheivement = options.setAcheivement;
+    }
+    
+    if (options.clearAcheivement) {
+        delete creep.memory.acheivement;
+    }
+};
+
+
+
+function locateEnergySource(creep) {
+    let sources = creep.room.find(FIND_SOURCES_ACTIVE);
+    let instance = Math.round(Math.random() * sources.length);
+    return sources[instance];
+};
+
+
+function locateBuildTarget(creep) {
+    
+    var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+	//console.log("build targets="+targets);
+    if(targets) {
+        return targets[Math.round(Math.random() * targets.length)];
+    } else {
+        return null;
+    }
+};
+
+
 function locateDeliveryTarget(creep) {
-    var targets = creep.room.find(FIND_STRUCTURES, {
+    let targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
                             return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
                                     structure.energy < structure.energyCapacity;} });
@@ -142,6 +176,6 @@ function locateDeliveryTarget(creep) {
     } else {
         return null;
     }
-}
+};
 
 module.exports = roleHarvester;
