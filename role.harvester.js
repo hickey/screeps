@@ -16,9 +16,25 @@ var T_recharge       = 5;
 var T_move           = 7;
     
 
+
 var roleHarvester = {
 
-
+    create: function(room) {
+        let newName = 'Harvester' + Game.time;
+        let res = null;
+        
+        if (room.energyAvailable >= 700) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], newName, 
+                            {memory: {role: 'harvester', mission: M_harvest}});
+        } else if (room.energyAvailable >= 500) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], newName, 
+                            {memory: {role: 'harvester', mission: M_harvest}});
+        } else if (room.energyAvailable >= 300) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,CARRY,MOVE,MOVE], newName, 
+                            {memory: {role: 'harvester', mission: M_harvest}});
+        };
+        return res;
+    }, 
     
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -48,7 +64,7 @@ var roleHarvester = {
                     case OK:
                         var distance = creep.pos.getRangeTo(goal);
                         if (distance == 1) {
-                            console.log("reached goal, reassing to target");
+                            //console.log("reached goal, reassing to target");
                             // reached goal, move to next state
                             creep.memory.target = creep.memory.goal;
                             creep.memory.goal = null;
@@ -57,12 +73,12 @@ var roleHarvester = {
                             var targets = creep.room.lookAt(target);
                             switch (targets[0].type) {
                                 case LOOK_SOURCES:
-                                    console.log("starting recharge");
+                                    //console.log("starting recharge");
                                     creep.memory.task = T_recharge;
                                     creep.harvest(target);
                                     break;
                                 case LOOK_STRUCTURES:
-                                    console.log("starting discharge");
+                                    //console.log("starting discharge");
                                     creep.memory.task = T_discharge;
                                     creep.transfer(target, RESOURCE_ENERGY);
                                     break;
@@ -77,7 +93,12 @@ var roleHarvester = {
                         return;
                         break;
                     case ERR_INVALID_TARGET:
-                        nextTask(creep, T_unassigned, {setGoal: null});
+                        var target = locateDeliveryTarget(creep);
+                        if (target) {
+                            nextTask(creep, T_move, {setGoal: target.id});
+                        } else {
+                            nextTask(creep, T_unassigned, {setGoal: null});    
+                        }
                         creep.say("ARG!");
                         break;
                 }
@@ -103,7 +124,7 @@ var roleHarvester = {
             case T_discharge:
                 if (creep.carry.energy > 0) {
                     var res = creep.transfer(target, RESOURCE_ENERGY);
-                    console.log("transfering energy: ", res);
+                    //console.log("transfering energy: ", res);
                     if (res == ERR_FULL) {
                         var target = locateDeliveryTarget(creep);
                         if (target) {
@@ -111,7 +132,7 @@ var roleHarvester = {
                         }
                     }
                 } else {
-                    console.log("transfer complete");
+                    //console.log("transfer complete");
                     // finished transfer of energy
                     nextTask(creep, T_unassigned, {setGoal: null});
                     creep.say("🔄 harvest");
@@ -148,9 +169,20 @@ function nextTask(creep, newTask, options) {
 
 
 function locateEnergySource(creep) {
+    let lottery = [];
     let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-    let instance = Math.round(Math.random() * sources.length);
-    return sources[instance];
+    sources.forEach(function(source) {
+        let perimeter = creep.room.lookAtArea(source.pos.y-1, source.pos.x-1, source.pos.y+1, source.pos.x+1, true);
+        perimeter.forEach(function(sector) {
+            if (sector.type == LOOK_TERRAIN) {
+                if (sector.terrain == 'swamp' || sector.terrain == 'plain') {
+                    lottery.push(source);
+                }
+            }
+        })
+    })
+    let instance = Math.round(Math.random() * lottery.length);
+    return lottery[instance];
 };
 
 

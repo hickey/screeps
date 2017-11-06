@@ -18,6 +18,22 @@ var T_move           = 7;
 
 var roleBuilder = {
 
+    create: function(room) {
+        let newName = 'Builder' + Game.time;
+        let res = null;
+        
+        if (room.energyAvailable >= 700) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], newName, 
+                            {memory: {role: 'builder', mission: M_build}});
+        } else if (room.energyAvailable >= 500) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,WORK,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE], newName, 
+                            {memory: {role: 'builder', mission: M_build}});
+        } else if (room.energyAvailable >= 300) {
+            res = Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,CARRY,MOVE,MOVE], newName, 
+                            {memory: {role: 'builder', mission: M_build}});
+        };
+        return res;
+    }, 
 
     /** @param {Creep} creep **/
     run: function(creep) {
@@ -46,7 +62,8 @@ var roleBuilder = {
                 switch(res) {
                     case OK:
                         var distance = creep.pos.getRangeTo(goal);
-                        if (distance == 1) {
+                        //console.log("distance = ", distance);
+                        if (distance <= 1) {
                             //console.log("reached goal, reassing to target");
                             // reached goal, move to next state
                             creep.memory.target = creep.memory.goal;
@@ -56,18 +73,18 @@ var roleBuilder = {
                             var targets = creep.room.lookAt(target);
                             switch (targets[0].type) {
                                 case LOOK_SOURCES:
-                                    console.log("found energy source");
+                                    //console.log("found energy source");
                                     creep.memory.task = T_recharge;
                                     creep.harvest(target);
                                     break;
                                 case LOOK_CONSTRUCTION_SITES:
-                                    console.log("found build structure");
+                                    //console.log("found build structure");
                                     creep.memory.task = T_build;
                                     creep.build(target);
                                     break;
                                 default:
-                                    console.log("found nothing");
-                                    console.log(JSON.stringify(targets));
+                                    //console.log("found nothing");
+                                    //console.log(JSON.stringify(targets));
                                     break;
                             } 
                         }
@@ -80,7 +97,12 @@ var roleBuilder = {
                         return;
                         break;
                     case ERR_INVALID_TARGET:
-                        nextTask(creep, T_unassigned, {setGoal: null});
+                        var target = locateBuildTarget(creep);
+                        if (target) {
+                            nextTask(creep, T_move, {setGoal: target.id});
+                        } else {
+                            nextTask(creep, T_unassigned, {setGoal: null});
+                        }
                         creep.say("ARG!");
                         break;
                 }
@@ -147,10 +169,22 @@ function nextTask(creep, newTask, options) {
 
 
 function locateEnergySource(creep) {
+    let lottery = [];
     let sources = creep.room.find(FIND_SOURCES_ACTIVE);
-    let instance = Math.round(Math.random() * sources.length);
-    return sources[instance];
+    sources.forEach(function(source) {
+        let perimeter = creep.room.lookAtArea(source.pos.y-1, source.pos.x-1, source.pos.y+1, source.pos.x+1, true);
+        perimeter.forEach(function(sector) {
+            if (sector.type == LOOK_TERRAIN) {
+                if (sector.terrain == 'swamp' || sector.terrain == 'plain') {
+                    lottery.push(source);
+                }
+            }
+        })
+    })
+    let instance = Math.round(Math.random() * lottery.length);
+    return lottery[instance];
 };
+
 
 
 function locateBuildTarget(creep) {
