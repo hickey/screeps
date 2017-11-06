@@ -39,7 +39,7 @@ var roleHarvester = {
             case T_unassigned:
                 let source = locateEnergySource(creep);
                 if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                    taskTransition(creep, T_move, {setGoal: source.id});
+                    nextTask(creep, T_move, {setGoal: source.id});
                 }
                 break;
                 
@@ -79,7 +79,7 @@ var roleHarvester = {
                         return;
                         break;
                     case ERR_INVALID_TARGET:
-                        taskTransition(creep, T_unassigned, {setGoal: null});
+                        nextTask(creep, T_unassigned, {setGoal: null});
                         creep.say("ARG!");
                         break;
                 }
@@ -90,13 +90,13 @@ var roleHarvester = {
                 if (creep.carry.energy < creep.carryCapacity) {
                     let res = creep.harvest(target);
                     if (res == ERR_NOT_ENOUGH_RESOURCES) {
-                        taskTransition(creep, T_unassigned, {setGoal: null});
+                        nextTask(creep, T_unassigned, {setGoal: null});
                     }
                 } else {
                     // finished recharging
                     let target = locateDeliveryTarget(creep);
                     if (target) {        
-                        taskTransition(creep, T_move, {setGoal: target.id});
+                        nextTask(creep, T_move, {setGoal: target.id});
                     }
                 }
                 break;
@@ -109,17 +109,33 @@ var roleHarvester = {
                     if (res == ERR_FULL) {
                         let target = locateDeliveryTarget(creep);
                         if (target) {
-                            taskTransition(creep, T_move, {setGoal: target.id});
+                            nextTask(creep, T_move, {setGoal: target.id});
                         }
                     }
                 } else {
                     console.log("transfer complete");
                     // finished transfer of energy
-                    taskTransition(creep, T_unassigned, {setGoal: null});
+                    nextTask(creep, T_unassigned, {setGoal: null});
                 }
                 break;
                 
-                
+              
+            case T_build:
+                if (creep.carry.energy > 0) {
+                    let res = creep.build(target);
+                    if (res == ERR_NOT_IN_RANGE || res == ERR_INVALID_TARGET) {
+                        let nextTarget = locateBuildTarget(creep);
+                        if (nextTarget) {
+                            nextTask(creep, T_move, {setGoal: nextTarget.id});
+                        }
+                    }
+                } else {
+                    // finished transfer of energy
+                    nextTask(creep, T_unassigned, {setGoal: null});
+                    creep.say("🔄 harvest");
+                }
+                break;
+                  
             
             
         }
@@ -129,7 +145,7 @@ var roleHarvester = {
 
 
 
-function taskTransition(creep, newTask, options) {
+function nextTask(creep, newTask, options) {
     creep.memory.task = newTask;
     if (options.setGoal) {
         creep.memory.target = creep.memory.goal;
@@ -143,13 +159,25 @@ function taskTransition(creep, newTask, options) {
     if (options.clearAcheivement) {
         delete creep.memory.acheivement;
     }
-}
+};
 
 
 function locateEnergySource(creep) {
     let sources = creep.room.find(FIND_SOURCES_ACTIVE);
     let instance = Math.round(Math.random() * sources.length);
     return sources[instance];
+};
+
+
+function locateBuildTarget(creep) {
+    
+    var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
+	//console.log("build targets="+targets);
+    if(targets) {
+        return targets[Math.round(Math.random() * targets.length)];
+    } else {
+        return null;
+    }
 };
 
 
