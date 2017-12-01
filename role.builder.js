@@ -21,7 +21,7 @@ var roleBuilder = {
     create: function(room) {
         let newName = 'Builder' + Game.time;
         let res = null;
-        
+
         if (room.energyAvailable >= 700) {
             res = Game.spawns['Spawn1'].spawnCreep([WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE], newName, 
                             {memory: {role: 'builder', mission: M_build}});
@@ -38,24 +38,24 @@ var roleBuilder = {
     /** @param {Creep} creep **/
     run: function(creep) {
         //console.log("roleHarvester.run()");
-        
+
         if (!creep.memory.task) {
             creep.memory.task = T_unassigned;
         }
         var goal = Game.getObjectById(creep.memory.goal);
         var target = Game.getObjectById(creep.memory.target);
-        
+
         //console.log("harvester task=", creep.memory.task);
         switch (creep.memory.task) {
-            
+
             case T_unassigned:
                 let source = locateEnergySource(creep);
                 if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
                     nextTask(creep, T_move, {setGoal: source.id});
                 }
                 break;
-                
-                
+
+
             case T_move:
                 var res = creep.moveTo(goal, {visualizePathStyle: {stroke: '#ffff00'}});
                 // console.log("res = ", res);
@@ -76,7 +76,7 @@ var roleBuilder = {
                             creep.memory.target = creep.memory.goal;
                             creep.memory.goal = null;
                             var target = Game.getObjectById(creep.memory.target);
-                
+
                             var targets = creep.room.lookAt(target);
                             switch (targets[0].type) {
                                 case LOOK_SOURCES:
@@ -114,8 +114,8 @@ var roleBuilder = {
                         break;
                 }
                 break;
-                
-            
+
+
             case T_recharge:
                 if (creep.carry.energy < creep.carryCapacity) {
                     var res = creep.harvest(target);
@@ -131,8 +131,8 @@ var roleBuilder = {
                     creep.say("🚧 build");
                 }
                 break;
-                
-    
+
+
             case T_build:
                 if (creep.carry.energy > 0) {
                     let res = creep.build(target);
@@ -148,12 +148,8 @@ var roleBuilder = {
                     creep.say("🔄 harvest");
                 }
                 break;
-                
-                
-            
-            
+
         }
-        
 	}
 };
 
@@ -164,11 +160,11 @@ function nextTask(creep, newTask, options) {
         creep.memory.target = creep.memory.goal;
         creep.memory.goal = options.setGoal;
     }
-    
+
     if (options.setAcheivement) {
         creep.memory.acheivement = options.setAcheivement;
     }
-    
+
     if (options.clearAcheivement) {
         delete creep.memory.acheivement;
     }
@@ -195,7 +191,7 @@ function locateEnergySource(creep) {
 
 
 function locateBuildTarget(creep) {
-    
+
     var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
 	//console.log("build targets="+targets);
     if(targets) {

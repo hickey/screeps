@@ -187,7 +187,6 @@ function locateEnergySource(creep) {
 
 
 function locateBuildTarget(creep) {
-    
     var targets = creep.room.find(FIND_CONSTRUCTION_SITES);
 	//console.log("build targets="+targets);
     if(targets) {
