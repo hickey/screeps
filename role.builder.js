@@ -66,7 +66,7 @@ var roleBuilder = {
                         let allowedDistance = 1;
                         sector.forEach(function(def) {
                             if (def.type == LOOK_CONSTRUCTION_SITES) {
-                                allowedDistance = 3;
+                                allowedDistance = 4;
                             }
                         });
                         //console.log("distance = ", distance);

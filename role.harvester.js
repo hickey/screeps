@@ -200,7 +200,8 @@ function locateBuildTarget(creep) {
 function locateDeliveryTarget(creep) {
     let targets = creep.room.find(FIND_STRUCTURES, {
                     filter: (structure) => {
-                            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) &&
+                            return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN ||
+                                    structure.structureType == STRUCTURE_TOWER || structure.structureType == STRUCTURE_RAMPART) &&
                                     structure.energy < structure.energyCapacity;} });
     if (targets) {   
         return targets[Math.round(Math.random() * targets.length)];
